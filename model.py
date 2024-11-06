@@ -5,7 +5,7 @@ from torch.utils.data import DataLoader, random_split
 from torchvision.datasets import ImageFolder
 
 # 配置参数
-num_classes = 10  # 设置类别数量，根据实际任务调整
+num_classes = 101
 batch_size = 32
 num_epochs = 10
 learning_rate = 0.001
@@ -19,7 +19,7 @@ transform = transforms.Compose([
     transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
 ])
 
-# 加载整个数据集（假设所有图像在一个文件夹下）
+# 加载整个数据集（所有图像在一个文件夹data下）
 data_dir = 'data'
 full_dataset = ImageFolder(root=data_dir, transform=transform)
 
@@ -31,8 +31,8 @@ val_size = len(full_dataset) - train_size   # 剩下 20% 用于验证
 train_dataset, val_dataset = random_split(full_dataset, [train_size, val_size])
 
 # 创建 DataLoader
-train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
+train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=4, pin_memory=True)
+val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=4, pin_memory=True)
 
 # 检查划分结果
 print(f"训练集大小：{len(train_loader.dataset)}")
@@ -47,7 +47,13 @@ num_ftrs = model.fc.in_features
 model.fc = nn.Linear(num_ftrs, num_classes)
 
 # 将模型移动到 GPU
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+if torch.cuda.is_available():
+    device = torch.device("cuda:0")
+    print("使用 GPU 加速")
+else:
+    device = torch.device("cpu")
+    print("GPU 不可用，使用 CPU")
+
 model = model.to(device)
 
 # 3. 定义损失函数和优化器
@@ -55,50 +61,49 @@ criterion = nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
 # 4. 训练模型
-if __name__ == '__main__':
-    # 训练代码
-    for epoch in range(num_epochs):
-        print(f"Epoch {epoch + 1}/{num_epochs}")
-        print('-' * 10)
 
-        for phase in ['train', 'val']:
-            if phase == 'train':
-                model.train()  # 训练模式
-                dataloader = train_loader
-            else:
-                model.eval()   # 验证模式
-                dataloader = val_loader
+for epoch in range(num_epochs):
+    print(f"Epoch {epoch + 1}/{num_epochs}")
+    print('-' * 10)
 
-            running_loss = 0.0
-            running_corrects = 0
+    for phase in ['train', 'val']:
+        if phase == 'train':
+            model.train()  # 训练模式
+            dataloader = train_loader
+        else:
+            model.eval()   # 验证模式
+            dataloader = val_loader
 
-            # 遍历数据
-            for inputs, labels in dataloader:
-                inputs = inputs.to(device)
-                labels = labels.to(device)
+        running_loss = 0.0
+        running_corrects = 0
 
-                # 清空梯度
-                optimizer.zero_grad()
+        # 遍历数据
+        for inputs, labels in dataloader:
+            inputs = inputs.to(device)
+            labels = labels.to(device)
 
-                # 前向传播
-                with torch.set_grad_enabled(phase == 'train'):
-                    outputs = model(inputs)
-                    _, preds = torch.max(outputs, 1)
-                    loss = criterion(outputs, labels)
+            # 清空梯度
+            optimizer.zero_grad()
 
-                    # 仅在训练阶段反向传播和优化
-                    if phase == 'train':
-                        loss.backward()
-                        optimizer.step()
+            # 前向传播
+            with torch.set_grad_enabled(phase == 'train'):
+                outputs = model(inputs)
+                _, preds = torch.max(outputs, 1)
+                loss = criterion(outputs, labels)
 
-                # 统计损失和准确率
-                running_loss += loss.item() * inputs.size(0)
-                running_corrects += torch.sum(preds == labels.data)
+                # 仅在训练阶段反向传播和优化
+                if phase == 'train':
+                    loss.backward()
+                    optimizer.step()
 
-            epoch_loss = running_loss / len(dataloader.dataset)
-            epoch_acc = running_corrects.double() / len(dataloader.dataset)
+            # 统计损失和准确率
+            running_loss += loss.item() * inputs.size(0)
+            running_corrects += torch.sum(preds == labels.data)
 
-            print(f"{phase} Loss: {epoch_loss:.4f} Acc: {epoch_acc:.4f}")
+        epoch_loss = running_loss / len(dataloader.dataset)
+        epoch_acc = running_corrects.double() / len(dataloader.dataset)
+
+        print(f"{phase} Loss: {epoch_loss:.4f} Acc: {epoch_acc:.4f}")
 
     print("训练完成！")
 
