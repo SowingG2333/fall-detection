@@ -31,8 +31,8 @@ val_size = len(full_dataset) - train_size   # 剩下 20% 用于验证
 train_dataset, val_dataset = random_split(full_dataset, [train_size, val_size])
 
 # 创建 DataLoader
-train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=4)
-val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=4)
+train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
 
 # 检查划分结果
 print(f"训练集大小：{len(train_loader.dataset)}")
@@ -55,64 +55,66 @@ criterion = nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
 # 4. 训练模型
-for epoch in range(num_epochs):
-    print(f"Epoch {epoch + 1}/{num_epochs}")
-    print('-' * 10)
+if __name__ == '__main__':
+    # 训练代码
+    for epoch in range(num_epochs):
+        print(f"Epoch {epoch + 1}/{num_epochs}")
+        print('-' * 10)
 
-    for phase in ['train', 'val']:
-        if phase == 'train':
-            model.train()  # 训练模式
-            dataloader = train_loader
-        else:
-            model.eval()   # 验证模式
-            dataloader = val_loader
+        for phase in ['train', 'val']:
+            if phase == 'train':
+                model.train()  # 训练模式
+                dataloader = train_loader
+            else:
+                model.eval()   # 验证模式
+                dataloader = val_loader
 
-        running_loss = 0.0
-        running_corrects = 0
+            running_loss = 0.0
+            running_corrects = 0
 
-        # 遍历数据
-        for inputs, labels in dataloader:
-            inputs = inputs.to(device)
-            labels = labels.to(device)
+            # 遍历数据
+            for inputs, labels in dataloader:
+                inputs = inputs.to(device)
+                labels = labels.to(device)
 
-            # 清空梯度
-            optimizer.zero_grad()
+                # 清空梯度
+                optimizer.zero_grad()
 
-            # 前向传播
-            with torch.set_grad_enabled(phase == 'train'):
-                outputs = model(inputs)
-                _, preds = torch.max(outputs, 1)
-                loss = criterion(outputs, labels)
+                # 前向传播
+                with torch.set_grad_enabled(phase == 'train'):
+                    outputs = model(inputs)
+                    _, preds = torch.max(outputs, 1)
+                    loss = criterion(outputs, labels)
 
-                # 仅在训练阶段反向传播和优化
-                if phase == 'train':
-                    loss.backward()
-                    optimizer.step()
+                    # 仅在训练阶段反向传播和优化
+                    if phase == 'train':
+                        loss.backward()
+                        optimizer.step()
 
-            # 统计损失和准确率
-            running_loss += loss.item() * inputs.size(0)
-            running_corrects += torch.sum(preds == labels.data)
+                # 统计损失和准确率
+                running_loss += loss.item() * inputs.size(0)
+                running_corrects += torch.sum(preds == labels.data)
 
-        epoch_loss = running_loss / len(dataloader.dataset)
-        epoch_acc = running_corrects.double() / len(dataloader.dataset)
+            epoch_loss = running_loss / len(dataloader.dataset)
+            epoch_acc = running_corrects.double() / len(dataloader.dataset)
 
-        print(f"{phase} Loss: {epoch_loss:.4f} Acc: {epoch_acc:.4f}")
+            print(f"{phase} Loss: {epoch_loss:.4f} Acc: {epoch_acc:.4f}")
 
-print("训练完成！")
+    print("训练完成！")
 
-# 5. 导出模型为 ONNX 格式
-dummy_input = torch.randn(1, 3, 224, 224, device=device)  # 与模型输入相匹配的张量
-onnx_file_path = "resnet18_finetuned.onnx"
-torch.onnx.export(
-    model,                 # 要导出的模型
-    dummy_input,           # 示例输入张量
-    onnx_file_path,        # 输出的 ONNX 文件名
-    export_params=True,    # 导出所有参数
-    opset_version=11,      # ONNX 操作集版本
-    do_constant_folding=True,  # 启用常量折叠优化
-    input_names=["input"],     # 输入张量的名称
-    output_names=["output"],   # 输出张量的名称
-    dynamic_axes={"input": {0: "batch_size"}, "output": {0: "batch_size"}}  # 动态批量大小
-)
+    # 5. 导出模型为 ONNX 格式
+    dummy_input = torch.randn(1, 3, 224, 224, device=device)  # 与模型输入相匹配的张量
+    onnx_file_path = "resnet18.onnx"
+    torch.onnx.export(
+        model,                 # 要导出的模型
+        dummy_input,           # 示例输入张量
+        onnx_file_path,        # 输出的 ONNX 文件名
+        export_params=True,    # 导出所有参数
+        opset_version=11,      # ONNX 操作集版本
+        do_constant_folding=True,  # 启用常量折叠优化
+        input_names=["input"],     # 输入张量的名称
+        output_names=["output"],   # 输出张量的名称
+        dynamic_axes={"input": {0: "batch_size"}, "output": {0: "batch_size"}}  # 动态批量大小
+    )
 
-print(f"模型已成功导出为 {onnx_file_path}")
+    print(f"模型已成功导出为 {onnx_file_path}")
