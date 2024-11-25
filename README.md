@@ -43,7 +43,7 @@
 1. **克隆项目仓库**
 
     ```bash
-    git clone https://github.com/SowingG2333/fall-down-detection-yolo.git
+    git clone https://github.com/SowingG2333/fall-detection.git
     ```
 
 2. **创建虚拟环境（可选）**
