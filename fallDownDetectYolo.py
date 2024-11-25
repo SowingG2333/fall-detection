@@ -251,14 +251,6 @@ class FallDownDetectYolo:
 
         return img
 
-    def load_class_names(self):
-        """
-        加载类别名称列表。
-        """
-        # 根据您的数据集修改类别名称
-        class_names = ['normal', 'down']
-        return class_names
-
     # 推理函数（基于视频流输入）
     def video_inference(self, source=0, display=True, save=False, save_path='output.avi'):
         """
