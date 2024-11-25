@@ -13,9 +13,6 @@
 - [使用指南](#使用指南)
   - [命令行用法](#命令行用法)
   - [API 使用](#api-使用)
-- [示例](#示例)
-  - [图像推理示例](#图像推理示例)
-  - [视频推理示例](#视频推理示例)
   
 ## 主要组成
 
@@ -46,7 +43,7 @@
 1. **克隆项目仓库**
 
     ```bash
-    git clone https://github.com/yourusername/your-repo.git](https://github.com/SowingG2333/fall-down-detection-yolo.git
+    git clone https://github.com/SowingG2333/fall-down-detection-yolo.git
     ```
 
 2. **创建虚拟环境（可选）**
