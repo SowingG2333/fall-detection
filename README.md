@@ -46,8 +46,7 @@
 1. **克隆项目仓库**
 
     ```bash
-    git clone https://github.com/yourusername/your-repo.git
-    cd your-repo
+    git clone https://github.com/yourusername/your-repo.git](https://github.com/SowingG2333/fall-down-detection-yolo.git
     ```
 
 2. **创建虚拟环境（可选）**
@@ -58,13 +57,7 @@
     ```
 
 3. **安装依赖**
-
-    ```bash
-    pip install -r requirements.txt
-    ```
-
-    *如果没有 `requirements.txt`，请确保安装以下库：*
-
+   
     ```bash
     pip install torch torchvision onnxruntime opencv-python numpy pandas argparse
     ```
