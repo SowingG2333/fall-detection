@@ -1,26 +1,49 @@
+import argparse
 from fallDownDetectYolo import FallDownDetectYolo
+import sys
 
 if __name__ == "__main__":
-    # 示例参数
-    yolov5_path = 'yolov5'  # YOLOv5 本地路径
-    weight_path_pt = 'yolov5/yolov5_best.pt'     # PyTorch 模型路径
-    weight_path_onnx = 'yolov5/yolov5_best.onnx' # ONNX 模型路径
-    image_path = 'image.png'  # 图片路径
-
-    # 选择模型类型：'pt' 或 'onnx'
-    model_type = 'onnx'
-
-    # 初始化检测器
-    detector = FallDownDetectYolo(
-        yolov5_path=yolov5_path,
-        weight_path=weight_path_pt if model_type == 'pt' else weight_path_onnx,
-        image_path=image_path,
-        pt_or_onnx=model_type
+    # 初始化参数解析器
+    parser = argparse.ArgumentParser(
+        description="基于 YOLOv5 的跌倒检测器，支持图片和视频输入，支持 PyTorch 和 ONNX 格式模型挂载",
+        epilog="命令行输入示例: python run.py --yolov5_path yolov5 --weight_path yolov5/yolov5_best.pt --image_path image.png --video_path video.avi --model_type pt --input_type image",
     )
 
-    # 视频源：0 表示默认摄像头，或替换为视频文件路径
-    video_source = 0  # 使用摄像头
-    # video_source = 'path/to/video.mp4'  # 使用视频文件
+    # 添加参数
+    parser.add_argument("--yolov5_path", type=str, required=True, help="YOLOv5 本地路径")
+    parser.add_argument("--weight_path", type=str, required=True, help="模型权重路径 (.pt 或 .onnx)")
+    parser.add_argument("--image_path", type=str, help="待检测的图片路径")
+    parser.add_argument("--video_path", type=str, help="待检测的视频路径")
+    parser.add_argument("--model_type", type=str, required=True, choices=['pt', 'onnx'], help="模型类型：pt 或 onnx")
+    parser.add_argument("--input_type", type=str, required=True, choices=['image', 'video'], help="输入类型：image 或 video")
+    parser.add_argument("--save", action='store_true', help="是否保存检测结果")
+    parser.add_argument("--save_path", type=str, default=None, help="检测结果保存路径（图片或视频）")
+    parser.add_argument("--fps", type=int, default=30, help="保存视频的帧率（仅在视频模式下有效）")
 
-    # 调用视频推理函数
-    detector.img_inference()
+    # 解析参数
+    args = parser.parse_args()
+
+    # 参数验证
+    if args.input_type == "image" and not args.image_path:
+        print("错误: 在图像模式下，必须指定 --image_path")
+        sys.exit(1)
+    if args.input_type == "video" and not args.video_path:
+        print("未指定 video_path ，将使用摄像头捕获视频流")
+        args.video_path = None
+        
+    # 创建检测器
+    detector = FallDownDetectYolo(
+        yolov5_path=args.yolov5_path,
+        weight_path=args.weight_path,
+        image_path=args.image_path if args.input_type == 'image' else '',
+        video_path=args.video_path if args.input_type == 'video' else None,
+        pt_or_onnx=args.model_type
+    )
+
+    # 运行检测器
+    if args.input_type == "image":
+        detector.img_inference(save=args.save, save_path=args.save_path)
+    elif args.input_type == "video":
+        detector.video_inference(save=args.save,
+                                 save_path=args.save_path if args.save_path else "output.mp4",
+                                 fps=args.fps)
