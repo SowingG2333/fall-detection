@@ -57,6 +57,9 @@
    
     ```bash
     pip install torch torchvision onnxruntime opencv-python numpy pandas argparse
+    git clone https://github.com/ultralytics/yolov5.git
+    cd yolov5
+    pip install -r requirements.txt
     ```
 
 4. **下载 YOLOv5 模型**
