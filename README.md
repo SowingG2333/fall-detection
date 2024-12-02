@@ -1,42 +1,47 @@
-# 基于 YOLOv5 的跌倒检测器项目
+# 基于 YOLOv5 的跌倒检测器
 
-这是一个基于 YOLOv5 的跌倒检测器项目，最初计划用于食物检测。该项目利用深度学习模型实现对视频或图片中的跌倒事件进行实时检测，并支持 PyTorch 和 ONNX 格式的模型。
+这是一个基于 **YOLOv5** 的跌倒检测器项目。该项目利用深度学习模型实现对视频或图片中的跌倒事件进行实时检测，支持 PyTorch 和 ONNX 格式的模型加载
 
 ## 目录
 
-- [主要组成](#主要组成)
-  - [1. YOLOv5 仓库](#1-yolov5-仓库)
-  - [2. FallDownDetectYolo 模块](#2-falldowndetectyolo-模块)
-    - [letterbox 填充函数](#letterbox-填充函数)
-    - [FallDownDetectYolo 类](#falldowndetectyolo-类)
-- [安装指南](#安装指南)
-- [使用指南](#使用指南)
-  - [命令行用法](#命令行用法)
-  - [API 使用](#api-使用)
+- [基于 YOLOv5 的跌倒检测器](#基于-yolov5-的跌倒检测器)
+  - [目录](#目录)
+  - [主要组成](#主要组成)
+    - [1. YOLOv5 仓库](#1-yolov5-仓库)
+    - [2. 本地推理（inferlocal）](#2-本地推理inferlocal)
+    - [3. 远程推理（inferemote）](#3-远程推理inferemote)
+    - [4. 模型参数 (modelweight)](#4-模型参数-modelweight)
+    - [5. 远程推理依赖（requirements）](#5-远程推理依赖requirements)
+  - [安装指南](#安装指南)
+  - [使用指南](#使用指南)
+    - [命令行用法](#命令行用法)
+      - [命令行参数说明](#命令行参数说明)
+      - [示例用法](#示例用法)
+    - [API 使用](#api-使用)
+      - [示例代码](#示例代码)
+    - [远程推理](#远程推理)
+      - [示例用法](#示例用法-1)
   
 ## 主要组成
-
 ### 1. YOLOv5 仓库
 
-本项目依赖于 [YOLOv5](https://github.com/ultralytics/yolov5) 仓库，用于模型的训练和推理。YOLOv5 是一个高效的目标检测算法，具有快速和准确的特点。
+本项目依赖于 [YOLOv5](https://github.com/ultralytics/yolov5) 仓库，用于模型的训练和推理。
 
-### 2. FallDownDetectYolo 模块
+### 2. 本地推理（inferlocal）
 
-`FallDownDetectYolo` 模块是项目的核心组件，负责加载模型、处理输入、进行推理以及输出检测结果。
+本地推理包含了 `FallDownDetectYolo` 模块，支持命令行运行的`run.py` 脚本以及 `run_api.py` 的api调用示例。
 
-- **letterbox 填充函数**  
-  `letterbox` 函数用于对输入图像进行预处理，保持图像的宽高比并填充到目标尺寸。这是 YOLOv5 特有的填充方式，以确保模型输入的一致性。  
+### 3. 远程推理（inferemote）
 
-- **FallDownDetectYolo 类**  
-  `FallDownDetectYolo` 类封装了跌倒检测的主要功能，包括模型加载、图像/视频预处理、推理、后处理和结果绘制。主要包含以下方法：
-  - `__init__`: 初始化检测器，加载模型。
-  - `load_class_names`: 加载类别名称。
-  - `xywh_to_xyxy`: 转换坐标格式。
-  - `preprocess_image`: 图像预处理。
-  - `postprocess_image`: 图像后处理。
-  - `draw_detections`: 绘制检测结果。
-  - `img_inference`: 对单张图片进行推理。
-  - `video_inference`: 对视频进行推理。
+远程推理包含了 `fall.py` 模块和 `test.py` 脚本，可以在本地进行端口转发，并在Atlas200DK开发板上挂载om模型后实行远程推理。
+
+### 4. 模型参数 (modelweight)
+
+包含了训练好的`pt`、`onnx`以及`om`文件。
+
+### 5. 远程推理依赖（requirements）
+
+包含远程推理需要的 `inferemote` 软件包。
 
 ## 安装指南
 
@@ -52,19 +57,29 @@
     python3 -m venv venv
     source venv/bin/activate
     ```
-
-3. **安装依赖**
+    
+3. **安装YOLOv5依赖**
    
     ```bash
-    pip install torch torchvision onnxruntime opencv-python numpy pandas argparse
     git clone https://github.com/ultralytics/yolov5.git
     cd yolov5
     pip install -r requirements.txt
     ```
 
-4. **下载 YOLOv5 模型**
+4. **安装本地推理依赖**
 
-    - 前往 [YOLOv5 Releases](https://github.com/ultralytics/yolov5/releases) 下载预训练模型，或使用自定义训练的模型。
+    ```bash
+    pip install torch torchvision onnxruntime opencv-python numpy pandas argparse
+    ```
+
+5. **安装远程推理依赖（基于Atlas200DK开发板，可选）**
+
+    ```bash
+    # windows安装
+    pip install requirements/inferemote-2.0.2-py39-none-win_amd64
+    # macos安装
+    pip install requirements/inferemote-2.0.2-py39-none-macosx_10_15_universal2
+    ```
 
 ## 使用指南
 
@@ -165,4 +180,19 @@ detector.img_inference(save=True, save_path='/path/to/output.jpg')
 
 # 对视频进行推理
 detector.video_inference(save=True, save_path='/path/to/output_video.avi', fps=30)
+```
+
+### 远程推理
+#### 示例用法
+1. 利用ssh工具与远程开发板进行端口转发（端口可更改）
+```bash
+ssh -L 9023:localhost:9666 username@ip -p 9023
+```
+2. 利用airloader工具进行om模型挂载
+```bash
+airloader -m /path/to/model.om -p 9666
+```
+3. 本地运行 `test.py` 脚本
+```bash
+python test.py -r localhost -p 9023 -w 5    
 ```
