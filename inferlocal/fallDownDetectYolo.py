@@ -358,7 +358,7 @@ class FallDownDetectYolo:
 
             elif self.pt_or_onnx == 'onnx':
                 # 预处理
-                preprocessed_img, original_img, ratio, padding = self.preprocess_image(frame)
+                preprocessed_img, ratio, padding = self.preprocess_image(frame)
 
                 # 进行推理
                 outputs = self.session.run(self.output_names, {self.input_name: preprocessed_img})[0]

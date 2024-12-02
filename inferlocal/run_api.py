@@ -10,4 +10,4 @@ detector = FallDownDetectYolo(
 )
 
 # 对单张图片进行推理
-detector.img_inference()
+detector.video_inference()
