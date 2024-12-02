@@ -57,7 +57,7 @@
     python3 -m venv venv
     source venv/bin/activate
     ```
-
+    
 3. **安装YOLOv5依赖**
    
     ```bash
