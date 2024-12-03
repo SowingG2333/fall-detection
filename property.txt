@@ -1,0 +1,3 @@
+#  set start-up mode, offline for local inference, online for Inferemote infereence
+# please load online model and set port forwarding manually
+mode=online

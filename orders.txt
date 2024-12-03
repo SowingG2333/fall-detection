@@ -1,0 +1,12 @@
+#离线模型推理
+#图片
+python net/run.py --yolov5 net/yolov5 --weight net/best.pt --image examples/2.jpg --model_type pt  --input_type image
+#视频
+python net/run.py --yolov5 net/yolov5 --weight net/best.pt --video examples/11.mp4 --model_type pt  --input_type video
+#摄像头
+python net/run.py --yolov5 net/yolov5 --weight net/best.pt --model_type pt  --input_type video
+#在线模型推理
+#图片
+python inferemote/test.py -r localhost -p 9023 -i examples/2.jpg -w 10
+#视频
+python inferemote/test.py -r localhost -p 9023 -i examples/11.mp4
