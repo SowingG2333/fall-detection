@@ -24,7 +24,7 @@
       - [示例用法](#示例用法-1)
 
 ## GUI应用仓库链接
-[https://github.com/Zzzqlzzzzql/PyQt5-Application-For-Fall-Detection-]
+**https://github.com/Zzzqlzzzzql/PyQt5-Application-For-Fall-Detection-**
   
 ## 主要组成
 ### 1. YOLOv5 仓库
