@@ -30,7 +30,7 @@ def make_image(img, detections):
 
     return img
 
-class MyTest(AiremoteTest, FallDownDetectYolo):
+class MyTest(AiremoteTest):
     ''' Define a callback function for inferencing, which will be called for every single image '''
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
